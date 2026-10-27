@@ -1,0 +1,41 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f7f1">
+  <title>{% block title %}PlotPal{% endblock %} · PlotPal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'garden/styles.css' %}">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="{% url 'garden:dashboard' %}">
+        <span class="brand-mark">✳</span><span>plot<span class="brand-light">pal</span></span>
+      </a>
+      <div class="garden-label">YOUR SPACE</div>
+      <nav class="side-nav" aria-label="Main navigation">
+        <a class="nav-link {% if request.path == '/' %}is-active{% endif %}" href="{% url 'garden:dashboard' %}"><span class="nav-icon">⌂</span>Overview</a>
+        <a class="nav-link {% if '/plots/' in request.path %}is-active{% endif %}" href="{% url 'garden:collection' 'plots' %}"><span class="nav-icon">▦</span>Garden beds</a>
+        <a class="nav-link {% if '/plantings/' in request.path %}is-active{% endif %}" href="{% url 'garden:collection' 'plantings' %}"><span class="nav-icon">♧</span>What’s growing</a>
+        <a class="nav-link {% if '/tasks/' in request.path %}is-active{% endif %}" href="{% url 'garden:collection' 'tasks' %}"><span class="nav-icon">☷</span>To-do list</a>
+        <a class="nav-link {% if '/harvests/' in request.path %}is-active{% endif %}" href="{% url 'garden:collection' 'harvests' %}"><span class="nav-icon">✿</span>Harvest journal</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="tip-card"><span class="tip-icon">☀</span><p>Little by little,<br><strong>the garden grows.</strong></p><span class="tip-sprout">❋</span></div>
+        <div class="profile-row"><span class="avatar">{{ request.user.username|first|upper }}</span><span class="profile-name">{{ request.user.username }}</span><form method="post" action="{% url 'garden:logout' %}">{% csrf_token %}<button class="logout-button" type="submit" aria-label="Log out">↗</button></form></div>
+      </div>
+    </aside>
+    <main class="main-content">
+      <header class="topbar"><span class="topbar-date">YOUR COMMUNITY GARDEN</span><span class="season-pill"><span></span> Growing season</span></header>
+      {% if messages %}<div class="messages">{% for message in messages %}<div class="message">{{ message }}</div>{% endfor %}</div>{% endif %}
+      {% block content %}{% endblock %}
+      <footer class="footer">Made for growing things together <span>✿</span></footer>
+    </main>
+  </div>
+</body>
+</html>

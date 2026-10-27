@@ -1,0 +1,42 @@
+{% extends "garden/base.html" %}
+{% block title %}Overview{% endblock %}
+{% block content %}
+<section class="welcome-row">
+  <div><p class="eyebrow">{% now "l, F j" %} · LET’S GET GROWING</p><h1>A little greener <span>every day.</span></h1><p class="welcome-copy">Here’s what’s happening in your garden right now.</p></div>
+  <a class="button button-primary" href="{% url 'garden:task_create' %}"><span>＋</span> Add a task</a>
+</section>
+<section class="stats-grid" aria-label="Garden summary">
+  <article class="stat-card"><div class="stat-icon stat-green">▦</div><div class="stat-label">Garden beds</div><div class="stat-value">{{ plot_count }}<span> beds</span></div><div class="stat-foot">Your little patches of green</div></article>
+  <article class="stat-card"><div class="stat-icon stat-lime">♧</div><div class="stat-label">Growing now</div><div class="stat-value">{{ active_plantings }}<span> plants</span></div><div class="stat-foot">Good things take time</div></article>
+  <article class="stat-card"><div class="stat-icon stat-orange">☷</div><div class="stat-label">On your list</div><div class="stat-value">{{ task_count }}<span> tasks</span></div><div class="stat-foot">One small thing at a time</div></article>
+  <article class="stat-card"><div class="stat-icon stat-pink">✿</div><div class="stat-label">Harvest notes</div><div class="stat-value">{{ harvest_count }}<span> logged</span></div><div class="stat-foot">Every little win counts</div></article>
+</section>
+<div class="dashboard-grid">
+  <section class="panel panel-main">
+    <div class="section-heading"><div><p class="eyebrow">FROM SEED TO SOMETHING</p><h2>Growing in the garden</h2></div><a class="text-link" href="{% url 'garden:collection' 'plantings' %}">See all <span>→</span></a></div>
+    {% if plantings %}
+    <div class="plant-list">{% for planting in plantings %}
+      <div class="plant-row"><div class="plant-thumb plant-color-{{ forloop.counter }}">♧</div><div class="plant-info"><strong>{{ planting.crop }}{% if planting.variety %} <span class="variety">{{ planting.variety }}</span>{% endif %}</strong><span>{{ planting.plot.name }}{% if planting.expected_harvest %} · Ready around {{ planting.expected_harvest|date:"M j" }}{% endif %}</span></div><span class="status-chip status-{{ planting.status }}">{{ planting.get_status_display }}</span><a class="row-edit" href="{% url 'garden:planting_edit' planting.pk %}" aria-label="Edit {{ planting.crop }}">↗</a></div>
+    {% endfor %}</div>
+    {% else %}<div class="empty-state"><span>♧</span><p>No plantings yet. Add your first one to get started.</p><a class="text-link" href="{% url 'garden:planting_create' %}">Plan a planting →</a></div>{% endif %}
+  </section>
+  <section class="panel task-panel">
+    <div class="section-heading"><div><p class="eyebrow">TEND TO YOUR PATCH</p><h2>Up next</h2></div><a class="text-link" href="{% url 'garden:collection' 'tasks' %}">All tasks <span>→</span></a></div>
+    {% if tasks %}<div class="task-list">{% for task in tasks %}
+      <div class="task-row"><form method="post" action="{% url 'garden:toggle_task' task.pk %}">{% csrf_token %}<button class="check-button" type="submit" aria-label="Mark {{ task.title }} complete"></button></form><div class="task-info"><strong>{{ task.title }}</strong><span>{% if task.plot %}{{ task.plot.name }} · {% endif %}Due {{ task.due_date|date:"M j" }}</span></div><span class="priority-dot priority-{{ task.priority }}" title="{{ task.get_priority_display }} priority"></span></div>
+    {% endfor %}</div>
+    {% else %}<div class="empty-state"><span>☀</span><p>All caught up! Enjoy the garden.</p></div>{% endif %}
+    <a class="button button-soft button-full" href="{% url 'garden:task_create' %}">＋ Add a garden task</a>
+  </section>
+  <section class="panel beds-panel">
+    <div class="section-heading"><div><p class="eyebrow">YOUR LITTLE CORNERS</p><h2>Garden beds</h2></div><a class="text-link" href="{% url 'garden:collection' 'plots' %}">See all <span>→</span></a></div>
+    {% if plots %}<div class="bed-grid">{% for plot in plots %}<a class="bed-card bed-card-{{ forloop.counter }}" href="{% url 'garden:plot_edit' plot.pk %}"><span class="bed-sun">☼</span><strong>{{ plot.name }}</strong><span>{{ plot.location|default:plot.area_sqft }}{% if plot.location %}{% else %} sq ft{% endif %}</span><small>{{ plot.plantings.count }} crops growing</small></a>{% endfor %}</div>
+    {% else %}<div class="empty-state"><span>▦</span><p>Create a bed to map out your garden.</p></div>{% endif %}
+  </section>
+  <section class="panel harvest-panel">
+    <div class="section-heading"><div><p class="eyebrow">FRESH FROM THE PATCH</p><h2>Recent harvests</h2></div><a class="text-link" href="{% url 'garden:collection' 'harvests' %}">Journal <span>→</span></a></div>
+    {% if harvests %}<div class="harvest-list">{% for harvest in harvests %}<div class="harvest-row"><span class="harvest-flower">✿</span><div><strong>{{ harvest.planting.crop }}</strong><span>{{ harvest.harvested_on|date:"M j" }}</span></div><b>{{ harvest.quantity|floatformat:"-2" }} {{ harvest.get_unit_display }}</b></div>{% endfor %}</div>
+    {% else %}<div class="empty-state"><span>✿</span><p>Your first harvest will feel extra special.</p><a class="text-link" href="{% url 'garden:harvest_create' %}">Log a harvest →</a></div>{% endif %}
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "garden/base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<section class="welcome-row page-welcome">
+  <div><p class="eyebrow">{{ eyebrow }}</p><h1>{{ title }}<span class="title-period">.</span></h1><p class="welcome-copy">Keep your little corner of the world flourishing.</p></div>
+  <a class="button button-primary" href="{% url add_url %}"><span>＋</span> Add new</a>
+</section>
+<section class="panel collection-panel">
+  {% if items %}
+    <div class="collection-list">
+    {% for item in items %}
+      <article class="collection-row">
+        <div class="collection-icon collection-icon-{{ forloop.counter }}">
+          {% if collection_type == "plots" %}▦{% elif collection_type == "plantings" %}♧{% elif collection_type == "tasks" %}☷{% else %}✿{% endif %}
+        </div>
+        <div class="collection-info">
+          {% if collection_type == "plots" %}
+            <strong>{{ item.name }}</strong><span>{{ item.location|default:"Garden bed" }} · {{ item.area_sqft }} sq ft · {{ item.get_status_display }}</span>
+          {% elif collection_type == "plantings" %}
+            <strong>{{ item.crop }}{% if item.variety %} <span class="variety">{{ item.variety }}</span>{% endif %}</strong><span>{{ item.plot.name }} · Planted {{ item.planted_on|date:"M j, Y" }}{% if item.expected_harvest %} · Harvest {{ item.expected_harvest|date:"M j" }}{% endif %}</span>
+          {% elif collection_type == "tasks" %}
+            <strong class="{% if item.completed %}is-complete{% endif %}">{{ item.title }}</strong><span>{% if item.plot %}{{ item.plot.name }} · {% endif %}Due {{ item.due_date|date:"M j, Y" }} · {{ item.get_priority_display }} priority{% if item.completed %} · Done{% endif %}</span>
+          {% else %}
+            <strong>{{ item.planting.crop }} · {{ item.quantity|floatformat:"-2" }} {{ item.get_unit_display }}</strong><span>Picked {{ item.harvested_on|date:"M j, Y" }}{% if item.notes %} · {{ item.notes }}{% endif %}</span>
+          {% endif %}
+        </div>
+        {% if collection_type == "tasks" and not item.completed %}<form method="post" action="{% url 'garden:toggle_task' item.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="button button-small button-soft" type="submit">Mark done</button></form>{% endif %}
+        <a class="row-action" href="{% if collection_type == 'plots' %}{% url 'garden:plot_edit' item.pk %}{% elif collection_type == 'plantings' %}{% url 'garden:planting_edit' item.pk %}{% elif collection_type == 'tasks' %}{% url 'garden:task_edit' item.pk %}{% else %}{% url 'garden:harvest_edit' item.pk %}{% endif %}">Edit</a>
+        <a class="row-action row-delete" href="{% if collection_type == 'plots' %}{% url 'garden:plot_delete' item.pk %}{% elif collection_type == 'plantings' %}{% url 'garden:planting_delete' item.pk %}{% elif collection_type == 'tasks' %}{% url 'garden:task_delete' item.pk %}{% else %}{% url 'garden:harvest_delete' item.pk %}{% endif %}">Remove</a>
+      </article>
+    {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state empty-large"><span>{% if collection_type == "plots" %}▦{% elif collection_type == "plantings" %}♧{% elif collection_type == "tasks" %}☷{% else %}✿{% endif %}</span><h2>Nothing here just yet</h2><p>Every garden starts somewhere. Add your first one and watch it grow.</p><a class="button button-primary" href="{% url add_url %}">＋ Add new</a></div>
+  {% endif %}
+</section>
+{% endblock %}

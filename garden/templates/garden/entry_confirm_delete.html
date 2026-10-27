@@ -1,0 +1,6 @@
+{% extends "garden/base.html" %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block content %}
+<section class="welcome-row page-welcome"><div><p class="eyebrow">A QUICK CHECK</p><h1>{{ page_title }}<span class="title-period">?</span></h1><p class="welcome-copy">Are you sure you want to remove “{{ object }}”?</p></div></section>
+<section class="panel form-panel delete-panel"><p>This can’t be undone. Related records may also be removed.</p><form method="post">{% csrf_token %}<div class="form-actions"><a class="button button-quiet" href="javascript:history.back()">Keep it</a><button class="button button-danger" type="submit">Yes, remove it</button></div></form></section>
+{% endblock %}

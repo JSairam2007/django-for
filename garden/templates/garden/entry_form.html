@@ -1,0 +1,22 @@
+{% extends "garden/base.html" %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block content %}
+<section class="welcome-row page-welcome">
+  <div><p class="eyebrow">{{ eyebrow|default:"A FEW LITTLE DETAILS" }}</p><h1>{{ page_title }}<span class="title-period">.</span></h1><p class="welcome-copy">A few details now make for a happier garden later.</p></div>
+</section>
+<section class="panel form-panel">
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+    {% for field in form %}
+      <div class="form-field{% if field.errors %} has-error{% endif %}">
+        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="required-mark"> *</span>{% endif %}</label>
+        {{ field }}
+        {% if field.help_text %}<small class="field-help">{{ field.help_text|safe }}</small>{% endif %}
+        {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+      </div>
+    {% endfor %}
+    <div class="form-actions"><a class="button button-quiet" href="javascript:history.back()">Cancel</a><button class="button button-primary" type="submit">Save to my garden <span>→</span></button></div>
+  </form>
+</section>
+{% endblock %}
