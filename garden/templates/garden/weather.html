@@ -1,0 +1,18 @@
+{% extends "garden/base.html" %}
+{% block title %}Garden weather{% endblock %}
+{% block content %}
+<section class="page-intro">
+  <p class="eyebrow">A LITTLE HELP FROM THE SKY</p>
+  <h1>Garden weather <span>check.</span></h1>
+  <p class="welcome-copy">Live conditions from Open-Meteo with a practical fallback when the service is unavailable.</p>
+</section>
+<section class="content-card weather-card" aria-live="polite">
+  <span class="weather-icon" aria-hidden="true">☀</span>
+  <div>
+    <p class="eyebrow">RIGHT NOW</p>
+    <h2>{{ weather.description }}</h2>
+    <p>{{ weather.advice }}</p>
+    {% if not weather.available %}<p class="weather-note">We couldn’t reach the weather service; this care tip is shown instead.</p>{% endif %}
+  </div>
+</section>
+{% endblock %}

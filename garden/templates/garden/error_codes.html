@@ -1,0 +1,23 @@
+{% extends "garden/base.html" %}
+{% block title %}Error code help{% endblock %}
+{% block content %}
+<section class="page-intro">
+  <p class="eyebrow">QUICK TROUBLESHOOTING</p>
+  <h1>Error codes, <span>explained.</span></h1>
+  <p class="welcome-copy">Select a code below, or ask the assistant to explain it.</p>
+</section>
+<section class="content-card error-code-list" aria-label="Error code reference">
+  {% for error in error_codes %}
+    <article class="error-code-item" id="code-{{ error.code|slugify }}">
+      <span class="code-badge">{{ error.code }}</span>
+      <div>
+        <h2>{{ error.title }}</h2>
+        <p>{{ error.explanation }}</p>
+        <p><strong>What to try:</strong> {{ error.suggestion }}</p>
+      </div>
+    </article>
+  {% empty %}
+    <p>Error-code guidance is being prepared.</p>
+  {% endfor %}
+</section>
+{% endblock %}

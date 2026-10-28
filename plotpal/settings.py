@@ -31,6 +31,13 @@ render_hostname = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
 if render_hostname:
     ALLOWED_HOSTS.append(render_hostname)
 CSRF_TRUSTED_ORIGINS = [f"https://{render_hostname}"] if render_hostname else []
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+AI_API_URL = os.environ.get("AI_API_URL", "https://api.openai.com/v1/chat/completions")
+AI_MODEL = os.environ.get("AI_MODEL", "gpt-4o-mini")
+MONGODB_URI = os.environ.get("MONGODB_URI", "")
+MONGODB_DATABASE = os.environ.get("MONGODB_DATABASE", "plotpal")
+WEATHER_LATITUDE = os.environ.get("WEATHER_LATITUDE", "13.0827")
+WEATHER_LONGITUDE = os.environ.get("WEATHER_LONGITUDE", "80.2707")
 
 
 # Application definition
@@ -54,6 +61,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'garden.observability.RequestLoggingMiddleware',
 ]
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -154,4 +162,11 @@ MAILERS = {
     'default': {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "root": {"handlers": ["console"], "level": "INFO"},
 }

@@ -82,3 +82,51 @@ class Harvest(models.Model):
 
     def __str__(self):
         return f"{self.quantity} {self.get_unit_display()} of {self.planting.crop}"
+
+
+class FAQ(models.Model):
+    question = models.CharField(max_length=240, unique=True)
+    answer = models.TextField()
+    keywords = models.CharField(max_length=400, blank=True)
+    sort_order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["sort_order", "question"]
+        verbose_name = "frequently asked question"
+        verbose_name_plural = "frequently asked questions"
+
+    def __str__(self):
+        return self.question
+
+
+class ErrorCode(models.Model):
+    code = models.CharField(max_length=12, unique=True)
+    title = models.CharField(max_length=120)
+    explanation = models.TextField()
+    suggestion = models.TextField()
+    sort_order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["sort_order", "code"]
+
+    def __str__(self):
+        return f"{self.code} — {self.title}"
+
+
+class SupportTicket(models.Model):
+    class Status(models.TextChoices):
+        OPEN = "open", "Open"
+        IN_PROGRESS = "in_progress", "In progress"
+        RESOLVED = "resolved", "Resolved"
+
+    name = models.CharField(max_length=120, blank=True)
+    email = models.EmailField(blank=True)
+    question = models.TextField()
+    status = models.CharField(max_length=16, choices=Status.choices, default=Status.OPEN)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Ticket #{self.pk}: {self.question[:60]}"

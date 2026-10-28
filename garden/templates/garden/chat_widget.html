@@ -1,0 +1,26 @@
+<section class="chat-widget" data-chat-url="{% url 'garden:chat' %}" data-feedback-url="{% url 'garden:chat_feedback' %}" aria-label="PlotPal assistant">
+  <div class="chat-panel" id="chat-panel" hidden>
+    <header class="chat-header">
+      <div><strong>Ask PlotPal</strong><span>Garden help, FAQs & error codes</span></div>
+      <button class="chat-close" type="button" aria-label="Close assistant">×</button>
+    </header>
+    <div class="chat-messages" id="chat-messages" aria-live="polite">
+      <p class="chat-message chat-answer">Hi! Ask me about garden FAQs or enter an error code such as 404.</p>
+    </div>
+    <form class="chat-form" id="chat-form">
+      {% csrf_token %}
+      <label class="sr-only" for="chat-input">Your question</label>
+      <input id="chat-input" name="message" maxlength="1000" placeholder="Type your question..." autocomplete="off" required>
+      <button type="submit" aria-label="Send question">Send</button>
+    </form>
+    <div class="chat-feedback" id="chat-feedback" hidden>
+      <span>Was this helpful?</span>
+      <button type="button" data-rating="5" aria-label="Yes, helpful">👍</button>
+      <button type="button" data-rating="1" aria-label="No, not helpful">👎</button>
+      <span class="feedback-status" id="feedback-status" role="status"></span>
+    </div>
+  </div>
+  <button class="chat-launcher" type="button" aria-controls="chat-panel" aria-expanded="false">
+    <span aria-hidden="true">✳</span> Ask the assistant
+  </button>
+</section>

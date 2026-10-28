@@ -1,0 +1,19 @@
+{% extends "garden/base.html" %}
+{% block title %}Frequently asked questions{% endblock %}
+{% block content %}
+<section class="page-intro">
+  <p class="eyebrow">HELP & GROWING TIPS</p>
+  <h1>Frequently asked <span>questions.</span></h1>
+  <p class="welcome-copy">Answers to common PlotPal and community-garden questions, available to the assistant too.</p>
+</section>
+<section class="content-card faq-list" aria-label="Frequently asked questions">
+  {% for faq in faqs %}
+    <details class="faq-item">
+      <summary>{{ faq.question }}</summary>
+      <p>{{ faq.answer }}</p>
+    </details>
+  {% empty %}
+    <p>Help articles are being prepared. Please ask the assistant or contact support.</p>
+  {% endfor %}
+</section>
+{% endblock %}

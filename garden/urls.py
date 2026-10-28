@@ -6,6 +6,11 @@ app_name = "garden"
 
 urlpatterns = [
     path("", views.dashboard, name="dashboard"),
+    path("faq/", views.faq_page, name="faq"),
+    path("errors/", views.error_codes_page, name="error_codes"),
+    path("weather/", views.weather_page, name="weather"),
+    path("assistant/chat/", views.chat, name="chat"),
+    path("assistant/feedback/", views.chat_feedback, name="chat_feedback"),
     path("accounts/login/", views.GardenLoginView.as_view(), name="login"),
     path("accounts/signup/", views.RegisterView.as_view(), name="signup"),
     path("accounts/logout/", views.GardenLogoutView.as_view(), name="logout"),

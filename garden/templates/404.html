@@ -1,0 +1,13 @@
+{% extends "garden/base.html" %}
+{% block title %}Page not found{% endblock %}
+{% block content %}
+<section class="content-card error-page">
+  <p class="eyebrow">ERROR 404</p>
+  <h1>We couldn’t find that page.</h1>
+  <p class="welcome-copy">The link may be old, or the address may have a typo.</p>
+  <div class="error-page-actions">
+    <a class="button button-primary" href="{% url 'garden:faq' %}">Visit the help page</a>
+    <button class="button button-soft" type="button" data-open-assistant>Ask the assistant</button>
+  </div>
+</section>
+{% endblock %}

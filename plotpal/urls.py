@@ -17,7 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
+from garden.views import health
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path("health/", health, name="health"),
     path("", include("garden.urls")),
 ]
+
+handler404 = "garden.views.page_not_found"
+handler500 = "garden.views.server_error"

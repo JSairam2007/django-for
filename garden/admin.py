@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import GardenTask, Harvest, Planting, Plot
+from .models import ErrorCode, FAQ, GardenTask, Harvest, Planting, Plot, SupportTicket
 
 
 @admin.register(Plot)
@@ -28,3 +28,22 @@ class GardenTaskAdmin(admin.ModelAdmin):
 class HarvestAdmin(admin.ModelAdmin):
     list_display = ("planting", "harvested_on", "quantity", "unit")
     list_filter = ("harvested_on",)
+
+
+@admin.register(FAQ)
+class FAQAdmin(admin.ModelAdmin):
+    list_display = ("question", "sort_order")
+    search_fields = ("question", "answer", "keywords")
+
+
+@admin.register(ErrorCode)
+class ErrorCodeAdmin(admin.ModelAdmin):
+    list_display = ("code", "title", "sort_order")
+    search_fields = ("code", "title", "explanation")
+
+
+@admin.register(SupportTicket)
+class SupportTicketAdmin(admin.ModelAdmin):
+    list_display = ("id", "status", "name", "email", "created_at")
+    list_filter = ("status", "created_at")
+    search_fields = ("question", "name", "email")

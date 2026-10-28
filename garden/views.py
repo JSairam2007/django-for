@@ -1,7 +1,13 @@
+import json
+import logging
+
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
+from django.db import connection
+from django.db.utils import DatabaseError
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views import View
@@ -9,7 +15,11 @@ from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, DeleteView, UpdateView
 
 from .forms import HarvestForm, GardenTaskForm, PlantingForm, PlotForm
-from .models import GardenTask, Harvest, Planting, Plot
+from .models import ErrorCode, FAQ, GardenTask, Harvest, Planting, Plot, SupportTicket
+from .observability import mongo_health, store_mongo_document
+from .services import answer_question, get_weather
+
+logger = logging.getLogger(__name__)
 
 
 def dashboard(request):
@@ -28,6 +38,115 @@ def dashboard(request):
         "harvests": Harvest.objects.select_related("planting")[:4],
     }
     return render(request, "garden/dashboard.html", context)
+
+
+def faq_page(request):
+    return render(request, "garden/faq.html", {"faqs": FAQ.objects.all()})
+
+
+def error_codes_page(request):
+    return render(request, "garden/error_codes.html", {"error_codes": ErrorCode.objects.all()})
+
+
+def weather_page(request):
+    return render(request, "garden/weather.html", {"weather": get_weather()})
+
+
+@require_POST
+def chat(request):
+    if request.content_type != "application/json":
+        return JsonResponse({"error": "Send the message as JSON."}, status=400)
+    try:
+        payload = json.loads(request.body)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return JsonResponse({"error": "The chat request is not valid JSON."}, status=400)
+
+    message = payload.get("message", "") if isinstance(payload, dict) else ""
+    conversation_id = payload.get("conversation_id", "") if isinstance(payload, dict) else ""
+    if not isinstance(message, str) or not message.strip():
+        return JsonResponse({"error": "Please enter a question."}, status=400)
+    message = message.strip()
+    if len(message) > 1000:
+        return JsonResponse({"error": "Please keep your question under 1,000 characters."}, status=400)
+
+    answer = answer_question(message)
+    ticket = None
+    if answer is None:
+        user = request.user
+        ticket = SupportTicket.objects.create(
+            name=user.get_username() if user.is_authenticated else "",
+            email=user.email if user.is_authenticated else "",
+            question=message,
+        )
+        answer = (
+            "I couldn’t find a reliable answer in the help articles, so I created "
+            f"support ticket #{ticket.pk}. Our team can follow up when contact details are available."
+        )
+
+    log_saved = store_mongo_document("chat_logs", {
+        "conversation_id": str(conversation_id)[:80],
+        "question": message,
+        "answer": answer,
+        "ticket_id": ticket.pk if ticket else None,
+        "user_id": request.user.pk if request.user.is_authenticated else None,
+    })
+    return JsonResponse({
+        "answer": answer,
+        "ticket_id": ticket.pk if ticket else None,
+        "log_saved": log_saved,
+    })
+
+
+@require_POST
+def chat_feedback(request):
+    if request.content_type != "application/json":
+        return JsonResponse({"error": "Send feedback as JSON."}, status=400)
+    try:
+        payload = json.loads(request.body)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return JsonResponse({"error": "The feedback request is not valid JSON."}, status=400)
+
+    if not isinstance(payload, dict):
+        return JsonResponse({"error": "Feedback must be a JSON object."}, status=400)
+    rating = payload.get("rating")
+    if isinstance(rating, bool) or not isinstance(rating, int) or not 1 <= rating <= 5:
+        return JsonResponse({"error": "Choose a rating from 1 to 5."}, status=400)
+    feedback = str(payload.get("feedback", "")).strip()
+    if len(feedback) > 1000:
+        return JsonResponse({"error": "Feedback must be 1,000 characters or fewer."}, status=400)
+
+    saved = store_mongo_document("chat_feedback", {
+        "rating": rating,
+        "feedback": feedback,
+        "conversation_id": str(payload.get("conversation_id", ""))[:80],
+    })
+    if not saved:
+        return JsonResponse({"error": "Feedback storage is unavailable. Please try again later."}, status=503)
+    return JsonResponse({"saved": True})
+
+
+def health(request):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+    except DatabaseError:
+        logger.exception("Health check could not reach the SQL database.")
+        return JsonResponse({"status": "unhealthy", "database": "unavailable"}, status=503)
+    mongodb_status = mongo_health()
+    return JsonResponse({
+        "status": "ok" if mongodb_status == "ok" else "degraded",
+        "database": "ok",
+        "mongodb": mongodb_status,
+    })
+
+
+def page_not_found(request, exception):
+    return render(request, "404.html", status=404)
+
+
+def server_error(request):
+    return render(request, "500.html", status=500)
 
 
 class RegisterView(View):
