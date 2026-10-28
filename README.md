@@ -50,7 +50,7 @@ Open `http://127.0.0.1:8000`, create an account, and explore the help center. To
 - `/faq/` — database-backed FAQ page
 - `/errors/` — supported error-code guide
 - `/weather/` — current conditions and fallback advice
-- `/health/` — SQL/database health check
+- `/health/` — SQL, MongoDB, and assistant-configuration health check
 - `/admin/` — manage FAQs, error codes, and support tickets
 
 Run the automated checks with:

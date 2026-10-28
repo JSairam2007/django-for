@@ -1,6 +1,7 @@
 import json
 import logging
 
+from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -138,6 +139,7 @@ def health(request):
         "status": "ok" if mongodb_status == "ok" else "degraded",
         "database": "ok",
         "mongodb": mongodb_status,
+        "assistant": "ai" if settings.OPENAI_API_KEY else "faq_fallback",
     })
 
 
